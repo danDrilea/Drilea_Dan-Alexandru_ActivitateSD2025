@@ -1,6 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 
+//Am dat commit pe 28 Februarie in loc de 25 Februarie deoarece nu am avut timp in ziua respectiva, de acum inainte toate seminariile vor fi
+//uploadate in ziua in care am avut seminarul
+
 struct Masina
 {
 	int id;
