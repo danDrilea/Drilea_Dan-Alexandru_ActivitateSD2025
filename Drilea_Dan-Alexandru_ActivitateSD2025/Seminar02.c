@@ -1,6 +1,8 @@
 #include<stdio.h>
 #include<malloc.h>
 
+//am adaugat comentariu ca sa se schimbe ceva, pentru a da commit de pe contul corect
+
 struct Masina
 {
 	int id;
