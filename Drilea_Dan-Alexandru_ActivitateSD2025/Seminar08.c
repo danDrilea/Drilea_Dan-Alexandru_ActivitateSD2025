@@ -3,10 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-//trebuie sa folositi fisierul masini.txt
-//sau va creati un alt fisier cu alte date
-
-struct StructuraMasina {
+struct StructuraMasina
+{
 	int id;
 	int nrUsi;
 	float pret;
@@ -19,34 +17,40 @@ typedef struct StructuraMasina Masina;
 struct Nod
 {
 	Masina info;
-	struct Nod* dr;
-	struct Nod* st;
+	struct Nod* right;
+	struct Nod* left;
 };
 typedef struct Nod Nod;
 
-Masina citireMasinaDinFisier(FILE* file) {
+Masina citireMasinaDinFisier(FILE* file)
+{
 	char buffer[100];
 	char sep[3] = ",\n";
+
+	Masina m;
+
 	fgets(buffer, 100, file);
 	char* aux;
-	Masina m1;
-	aux = strtok(buffer, sep);
-	m1.id = atoi(aux);
-	m1.nrUsi = atoi(strtok(NULL, sep));
-	m1.pret= atof(strtok(NULL, sep));
-	aux = strtok(NULL, sep);
-	m1.model = malloc(strlen(aux) + 1);
-	strcpy_s(m1.model, strlen(aux) + 1, aux);
+
+	m.id = atoi(strtok(buffer, sep));
+	m.nrUsi = atoi(strtok(NULL, sep));
+	m.pret = atof(strtok(NULL, sep));
 
 	aux = strtok(NULL, sep);
-	m1.numeSofer = malloc(strlen(aux) + 1);
-	strcpy_s(m1.numeSofer, strlen(aux) + 1, aux);
+	m.model = malloc(strlen(aux) + 1);
+	strcpy(m.model, aux);
 
-	m1.serie = *strtok(NULL, sep);
-	return m1;
+	aux = strtok(NULL, sep);
+	m.numeSofer = malloc(strlen(aux) + 1);
+	strcpy(m.numeSofer, aux);
+
+	m.serie = strtok(NULL, sep)[0];
+
+	return m;
 }
 
-void afisareMasina(Masina masina) {
+void afisareMasina(Masina masina)
+{
 	printf("Id: %d\n", masina.id);
 	printf("Nr. usi : %d\n", masina.nrUsi);
 	printf("Pret: %.2f\n", masina.pret);
@@ -55,138 +59,173 @@ void afisareMasina(Masina masina) {
 	printf("Serie: %c\n\n", masina.serie);
 }
 
-
-void adaugaMasinaInArbore(Nod** nod, Masina masinaNoua) {
+void adaugaMasinaInArbore(Nod** nod, Masina masinaNoua)
+{
 	if ((*nod) != NULL)
 	{
 		if (masinaNoua.id > (*nod)->info.id)
 		{
-			adaugaMasinaInArbore(&(*nod)->dr, masinaNoua);
+			adaugaMasinaInArbore(&(*nod)->right, masinaNoua);
 		}
 		else if (masinaNoua.id < (*nod)->info.id)
 		{
-			adaugaMasinaInArbore(&(*nod)->st, masinaNoua);
+			adaugaMasinaInArbore(&(*nod)->left, masinaNoua);
 		}
 	}
 	else
 	{
 		(*nod) = (Nod*)malloc(sizeof(Nod));
 		(*nod)->info = masinaNoua;
-		(*nod)->st = NULL;
-		(*nod)->dr = NULL;
+		(*nod)->right = NULL;
+		(*nod)->left = NULL;
 	}
 }
 
-void* citireArboreDeMasiniDinFisier(const char* numeFisier) {
-	//functia primeste numele fisierului, il deschide si citeste toate masinile din fisier
-	//prin apelul repetat al functiei citireMasinaDinFisier()
-	//ATENTIE - la final inchidem fisierul/stream-ul
+Nod* citireArboreDeMasiniDinFisier(const char* numeFisier)
+{
 	FILE* f = fopen(numeFisier, "r");
 	Nod* nod = NULL;
+
 	while (!feof(f))
 	{
-		adaugaMasinaInArbore(&nod, citireMasinaDinFisier(f));
+		Masina m = citireMasinaDinFisier(f);
+		adaugaMasinaInArbore(&nod, m);
 	}
 	fclose(f);
 	return nod;
 }
 
-void afisareMasiniDinArbore(/*arbore de masini*/) {
-	//afiseaza toate elemente de tip masina din arborele creat
-	//prin apelarea functiei afisareMasina()
-	//parcurgerea arborelui poate fi realizata in TREI moduri
-	//folositi toate cele TREI moduri de parcurgere
-}
-
-void afisarePreOrdineRSD(Nod* radacina) {
-	if (radacina != NULL)
+void afisarePreOrdineRSD(Nod* root)
+{
+	if (root != NULL)
 	{
-		afisareMasina(radacina->info);
-		afisarePreOrdineRSD(radacina->st);
-		afisarePreOrdineRSD(radacina->dr);
+		afisareMasina(root->info);
+		afisarePreOrdineRSD(root->left);
+		afisarePreOrdineRSD(root->right);
 	}
 }
 
-
-void afisareInOrdineSRD(Nod* radacina) {
-	if (radacina != NULL)
+void afisareInOrdineSRD(Nod* root)
+{
+	if (root != NULL)
 	{
-		afisareInOrdineSRD(radacina->st);
-		afisareMasina(radacina->info);
-		afisareInOrdineSRD(radacina->dr);
+		afisareInOrdineSRD(root->left);
+		afisareMasina(root->info);
+		afisareInOrdineSRD(root->right);
 	}
 }
 
-//void afisareInOrdineSRD(Nod* radacina) {
-//	if (radacina != NULL)
-//	{
-//		afisareInOrdineSRD(radacina->st);
-//		afisareMasina(radacina->info);
-//		afisareInOrdineSRD(radacina->dr);
-//	}
-//}
-
-void dezalocareArboreDeMasini(/*arbore de masini*/) {
-	//sunt dezalocate toate masinile si arborele de elemente
+void afisarePostOrdineSDR(Nod* root)
+{
+	if (root != NULL)
+	{
+		afisarePostOrdineSDR(root->left);
+		afisarePostOrdineSDR(root->right);
+		afisareMasina(root->info);
+	}
 }
 
-Masina getMasinaByID(Nod *radacina, int id) {
+Masina getMasinaByID(Nod* root, int id)
+{
 	Masina m;
 	m.id = -1;
-	if (radacina != NULL) {
-		if (id < radacina->info.id) {
-			return getMasinaByID(radacina->st, id);
-		}
-		else {
-			if (id > radacina->info.id) {
-				return getMasinaByID(radacina->dr, id);
-			}
-			else {
-				return radacina->info;
-			}
-		}
 
+	if (root != NULL)
+	{
+		if (id < root->info.id)
+		{
+			return getMasinaByID(root->left, id);
+		}
+		else if (id > root->info.id)
+		{
+			return getMasinaByID(root->right, id);
+		}
+		else
+		{
+			return root->info;
+		}
 	}
 	return m;
 }
 
-int determinaNumarNoduri(Nod * radacina) {
-	//calculeaza numarul total de noduri din arborele binar de cautare
-	int nrNoduri = 0;
-	if (radacina != NULL) {
-		nrNoduri += determinaNumarNoduri(radacina->st);
-		nrNoduri += determinaNumarNoduri(radacina->dr);
-		nrNoduri += 1;
+int calculeazaNrNoduri(Nod* root)
+{
+	int NodeCount = 0;
+	if (root != NULL)
+	{
+		NodeCount += calculeazaNrNoduri(root->left);
+		NodeCount += calculeazaNrNoduri(root->right);
+		NodeCount++;
 	}
-	return nrNoduri;
+	return NodeCount;
 }
 
-int calculeazaInaltimeArbore(/*arbore de masini*/) {
-	//calculeaza inaltimea arborelui care este data de 
-	//lungimea maxima de la radacina pana la cel mai indepartat nod frunza
-	return 0;
+int calculeazaInaltimeArbore(Nod* root)
+{
+	int inaltimeStanga = 0;
+	int inaltimeDreapta = 0;
+	int inaltime = 0;
+	if (root != NULL)
+	{
+		inaltimeStanga = calculeazaInaltimeArbore(root->left);
+		inaltimeDreapta = calculeazaInaltimeArbore(root->right);
+		inaltime = 1 + ((inaltimeStanga > inaltimeDreapta) ? inaltimeStanga : inaltimeDreapta);
+	}
+
+	return inaltime;
 }
 
-float calculeazaPretTotal(/*arbore de masini*/) {
-	//calculeaza pretul tuturor masinilor din arbore.
-	return 0;
+int calculeazaPretTotal(Nod* root)
+{
+	float pretTotal = 0;
+	if (root != NULL)
+	{
+		pretTotal += root->info.pret;
+		pretTotal += calculeazaPretTotal(root->left);
+		pretTotal += calculeazaPretTotal(root->right);
+	}
+	return pretTotal;
 }
 
-float calculeazaPretulMasinilorUnuiSofer(/*arbore de masini*/ const char* numeSofer) {
-	//calculeaza pretul tuturor masinilor unui sofer.
-	return 0;
+float calculeazaPretulMasinilorUnuiSofer(Nod* root, const char* numeSofer)
+{
+	float pretTotal = 0;
+	if (root != NULL)
+	{
+		if (strcmp(root->info.numeSofer, numeSofer) == 0)
+		{
+			pretTotal += root->info.pret;
+		}
+		pretTotal += calculeazaPretulMasinilorUnuiSofer(root->left, numeSofer);
+		pretTotal += calculeazaPretulMasinilorUnuiSofer(root->right, numeSofer);
+	}
+	return pretTotal;
 }
 
-int main() {
+void dezalocareArboreDeMasini(Nod** root)
+{
+	if (root != NULL && (*root) != NULL)
+	{
+		dezalocareArboreDeMasini(&(*root)->left);
+		dezalocareArboreDeMasini(&(*root)->right);
+		free((*root)->info.numeSofer);
+		free((*root)->info.model);
+		free((*root));
+		*root = NULL;
+	}
+}
 
-	Nod* rad = citireArboreDeMasiniDinFisier("masini_arbore.txt");
-	afisarePreOrdineRSD(rad);
-	printf("Masinile\n");
-	afisareInOrdineSRD(rad);
-	printf("\nMasina gasita: ");
-	afisareMasina(getMasinaByID(rad, 6));
-	printf("\nnrnoduri:%d", determinaNumarNoduri(rad));
-
-	//dezalocare
-	return 0;
+int main()
+{
+	Nod* root = citireArboreDeMasiniDinFisier("masini.txt");
+	afisareInOrdineSRD(root);
+	afisarePreOrdineRSD(root);
+	afisarePostOrdineSDR(root);
+	puts("Masina cu id 1 este");
+	afisareMasina(getMasinaByID(root, 1));
+	printf("Sunt %d noduri\n", calculeazaNrNoduri(root));
+	printf("Sunt %d nivele\n", calculeazaInaltimeArbore(root));
+	printf("Pretul total este de %d u.m.\n", calculeazaPretTotal(root));
+	printf("Ionescu are masini in valoare de %.2f u.m.\n", calculeazaPretulMasinilorUnuiSofer(root, "Ionescu"));
+	dezalocareArboreDeMasini(&root);
 }
