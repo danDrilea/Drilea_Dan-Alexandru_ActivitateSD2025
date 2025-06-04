@@ -14,7 +14,7 @@
 //	char* numeSofer;
 //	unsigned char serie;
 //};
-//typedef struct StructuraMasina Masina;
+//typeshi struct StructuraMasina Masina;
 //
 //Masina citireMasinaDinFisier(FILE* file) {
 //	char buffer[100];
@@ -47,46 +47,42 @@
 //	printf("Serie: %c\n\n", masina.serie);
 //}
 //
-//typedef struct NodLP NodLP;
-//typedef struct NodLS NodLS;
+//typeshi struct NodLS NodLS;
+//typeshi struct NodLP NodLP;
 //
-//struct NodLS
-//{
+//struct NodLS {
 //	NodLP* nodPrincipal;
 //	NodLS* next;
 //};
 //
-//struct NodLP
-//{
+//struct NodLP {
 //	Masina info;
 //	NodLS* vecini;
 //	NodLP* next;
 //};
 //
-//void inserareLP(NodLP** cap, Masina m)
-//{
+//void inserareInLP(NodLP** cap, Masina masina) {
 //	NodLP* nou = (NodLP*)malloc(sizeof(NodLP));
-//	nou->info = m;
-//	nou->next = NULL;
-//	nou->vecini = NULL;
 //
-//	if (*(cap) == NULL)
-//	{
-//		*cap = nou;
+//	nou->vecini = NULL;
+//	nou->info = masina;
+//	nou->next = NULL;
+//
+//	if ((*cap) == NULL) {
+//		(*cap) = nou;
 //	}
-//	else
-//	{
+//	else {
 //		NodLP* temp = (*cap);
-//		while (temp->next != NULL)
-//		{
+//
+//		while (temp->next != NULL) {
 //			temp = temp->next;
 //		}
+//
 //		temp->next = nou;
 //	}
 //}
 //
-//void inserareLS(NodLS** cap, NodLP* nodPrincipal)
-//{
+//void inserareInLS(NodLS** cap, NodLP* nodPrincipal) {
 //	NodLS* nou = (NodLS*)malloc(sizeof(NodLS));
 //	nou->nodPrincipal = nodPrincipal;
 //	nou->next = (*cap);
@@ -95,58 +91,52 @@
 //}
 //
 //NodLP* cautaNodDupaID(NodLP* cap, int id) {
-//
-//	while (cap != NULL && cap->info.id != id)
-//	{
+//	while (cap != NULL && cap->info.id != id) {
 //		cap = cap->next;
 //	}
 //
 //	return cap;
-//
 //}
 //
-//void inserareMuchie(NodLP* cap, int idStart, int idStop)
-//{
-//	NodLP* nodStart = cautaNodDupaID(cap,idStart);
-//	NodLP* nodStop = cautaNodDupaID(cap,idStop);
+////4.
+////inserare muchie
+//void inserareMuchie(NodLP* cap, int idStart, int idStop) {
+//	NodLP* nodStart = cautaNodDupaID(cap, idStart);
+//	NodLP* nodStop = cautaNodDupaID(cap, idStop);
 //
-//	if (nodStart && nodStop)
-//	{
-//		inserareLS(&nodStart->vecini, nodStop);
-//		inserareLS(&nodStop->vecini, nodStart); // doar pt graf neorientat facem si reciproc inserare
+//	if (nodStart != NULL && nodStop != NULL) {
+//		inserareInLS(&(nodStart->vecini), nodStop);
+//		// DOAR PENTRU GRAF NEORIENTAT
+//		inserareInLS(&(nodStop->vecini), nodStart);
 //	}
-//
 //}
 //
-//void* citireNoduriMasiniDinFisier(const char* numeFisier) {
-//
+//NodLP* citireNoduriMasiniDinFisier(const char* numeFisier) {
 //	FILE* f = fopen(numeFisier, "r");
 //	NodLP* cap = NULL;
-//	while (!feof(f))
-//	{
+//
+//	while (!feof(f)) {
 //		Masina m = citireMasinaDinFisier(f);
-//		inserareLP(&cap, m);
+//		inserareInLP(&cap, m);
 //	}
+//
 //	fclose(f);
+//
 //	return cap;
 //}
 //
 //void citireMuchiiDinFisier(NodLP* cap, const char* numeFisier) {
 //	FILE* f = fopen(numeFisier, "r");
-//	int idStart;
-//	int idStop;
-//	while (!feof(f))
-//	{
+//	int idStart, idStop;
+//	while (!feof(f)) {
 //		fscanf(f, "%d %d", &idStart, &idStop);
-//		inserareMuchie(cap, idStart, idStop);
+//		inserareMuchie(cap, idStart, idStart);
 //	}
 //	fclose(f);
 //}
 //
-//void dezalocareListaAdiacentaLS(NodLS* cap)
-//{
-//	while (cap != NULL)
-//	{
+//void dezalocareListaAdiacentaLS(NodLS* cap) {
+//	while (cap != NULL) {
 //		NodLS* temp = cap->next;
 //		free(cap);
 //		cap = temp;
@@ -154,8 +144,9 @@
 //}
 //
 //void dezalocareNoduriGraf(NodLP** cap) {
-//	while ((*cap) != NULL)
-//	{
+//	//sunt dezalocate toate masinile din graf 
+//	//si toate nodurile celor doua liste
+//	while ((*cap) != NULL) {
 //		NodLP* temp = (*cap)->next;
 //		dezalocareListaAdiacentaLS((*cap)->vecini);
 //		free((*cap)->info.model);
@@ -164,20 +155,21 @@
 //		free((*cap));
 //		(*cap) = temp;
 //	}
+//
 //}
 //
-//NodLP* citesteGrafMasini(const char* numeFisierMasini, const char* numeFisierMuchii)
-//{
-//	NodLP* graf = citireNoduriMasiniDinFisier(numeFisierMasini);
-//	citireMuchiiDinFisier(graf,numeFisierMuchii);
+//NodLP* citesteGrafMasini(const char* fisierMasini, const char* fisierMuchii) {
+//	NodLP* graf = citireNoduriMasiniDinFisier(fisierMasini);
+//	citireMuchiiDinFisier(graf, fisierMuchii);
 //
 //	return graf;
 //}
 //
 //int main() {
+//
 //	NodLP* graf = citesteGrafMasini("masini.txt", "muchii.txt");
 //
-//
+//	dezalocareNoduriGraf(&graf);
 //
 //	return 0;
 //}
